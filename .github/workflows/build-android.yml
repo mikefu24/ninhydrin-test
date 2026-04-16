@@ -32,9 +32,9 @@ jobs:
             libxml2-dev libxslt1-dev zlib1g-dev \
             libgstreamer1.0-dev gstreamer1.0-plugins-base \
             gstreamer1.0-plugins-good \
-            openjdk-11-jdk autoconf automake \
-            build-essential libtool libtinfo5 \
-            libncurses5 wget curl \
+            openjdk-17-jdk-headless autoconf automake \
+            build-essential libtool libtinfo6 \
+            libncurses6 wget curl \
             python3-pip python3-setuptools \
             python3-dev
       

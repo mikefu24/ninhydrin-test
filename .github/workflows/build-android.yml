@@ -1,0 +1,63 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:  # 允许手动触发
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.9'
+      
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            git ffmpeg cmake pkg-config \
+            libjpeg-dev libffi-dev libssl-dev \
+            libxml2-dev libxslt1-dev zlib1g-dev \
+            libgstreamer1.0-dev gstreamer1.0-plugins-base \
+            gstreamer1.0-plugins-good \
+            openjdk-11-jdk autoconf automake \
+            build-essential libtool libtinfo5 \
+            libncurses5 wget curl \
+            python3-pip python3-setuptools \
+            python3-dev
+      
+      - name: Install Buildozer and dependencies
+        run: |
+          pip3 install --upgrade pip
+          pip3 install buildozer Cython==0.29.36
+      
+      - name: Build APK
+        run: |
+          cd ninhydrin_mobile
+          # 首次运行会下载 Android SDK/NDK（约 20-30 分钟）
+          buildozer android debug
+      
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: ninhydrin-apk
+          path: ninhydrin_mobile/bin/*.apk
+          retention-days: 30
+      
+      - name: Create Release (on tag)
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v1
+        with:
+          files: ninhydrin_mobile/bin/*.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
